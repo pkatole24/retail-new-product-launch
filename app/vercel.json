@@ -2,6 +2,6 @@
   "framework": null,
   "outputDirectory": "public",
   "functions": {
-    "api/forecast.mjs": { "maxDuration": 35 }
+    "api/forecast.mjs": { "maxDuration": 100 }
   }
 }

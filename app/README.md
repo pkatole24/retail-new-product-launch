@@ -1,25 +1,24 @@
 # Retail Launch Planner
 
-The Vercel project root is `app`. The browser files are in `public/`, and `api/forecast.mjs` forwards live requests to the private inference worker. The app offers a labeled fictional workflow for UI review without access to any private artifacts. The **Run sales forecast** action calls the live worker.
+**Build a Launch** forecasts first-month unit sales for a new product or colorway. Enter the product brief, run the forecast, compare pilot stores, and allocate a network-wide inventory budget. For a catalog style without released sizes, enter the sizes manually. **View sample workflow** uses fictional results and works without the live service.
 
-To run live forecasts locally from the repository root, run `node app/local.mjs` and open `http://127.0.0.1:8080`. The launcher uses the existing Windows model environment and private release, starts the Python worker, and serves the browser and API on loopback. Press Ctrl+C to stop both. Override `FORECAST_UI_PORT` or `FORECAST_WORKER_PORT` if a port is busy. Override `FORECAST_PYTHON`, `FORECAST_RELEASE_JSON`, `FORECAST_MODEL_DIR`, or `FORECAST_ENCODER_DIR` if those files are stored elsewhere.
+The planner compares the highest-forecast pilot shortlist with a same-size shortlist that maximizes known metro coverage while retaining at least 90% of the top shortlist's forecast. Network allocation uses store forecast shares and preserves the entered whole-unit budget. The maps use bundled [U.S. Census boundaries](https://github.com/topojson/us-atlas).
 
-## Live inference
+## Vercel and Databricks Model Serving
 
-The worker in `scorer.py` runs the six frozen PyTorch checkpoints and the pinned FashionSigLIP text encoder. Run it in the existing model environment with the repository's `src/` directory available. Keep the encoder, checkpoints, and approved release file on the worker host. Configure HTTPS access via a reverse proxy or private hosting integration. The worker listens on loopback by default.
+Set the Vercel project root to `app`. The interface lives in `public/`. The server-side gateway in `api/forecast.mjs` requests the style catalog and forecasts from a Databricks Model Serving endpoint using OAuth. Configure these variables in Vercel's server environment:
 
-Worker environment variables
+- `DATABRICKS_HOST` and `DATABRICKS_SERVING_ENDPOINT` identify the workspace and endpoint.
+- `DATABRICKS_CLIENT_ID` and `DATABRICKS_CLIENT_SECRET` authenticate a dedicated service principal with permission to query the endpoint.
 
-- `FORECAST_MODEL_DIR` points to the directory with `prelaunch_1_14/seed_{13,29,47}` and `prelaunch_15_28/seed_{13,29,47}`, each with `model.pt` and `preprocessing.json`.
-- `FORECAST_ENCODER_DIR` points to the local encoder at the revision recorded in the checkpoints.
-- `FORECAST_RELEASE_JSON` points to the authorized dataset-end release described below.
-- `FORECAST_SERVICE_TOKEN` is a shared worker token. `FORECAST_PORT` defaults to `8001`.
+The scorer uses six frozen PyTorch checkpoints and the pinned FashionSigLIP encoder. It averages seeds 13, 29, and 47 for each prelaunch window. Live forecasts use the serving release's store snapshot. A missing or unavailable endpoint prevents live forecasts, and the sample workflow remains available.
 
-Set `FORECAST_SERVICE_URL` and the same `FORECAST_SERVICE_TOKEN` in Vercel's server environment. Deploy from the `app` root after the intended store outputs and style catalog have been cleared for the app's audience.
+## Local live inference
 
-For a container host, build from the repository root with `docker build -f app/Dockerfile.worker -t retail-forecast-worker .`. Mount the authorized release, model, and encoder artifacts read-only at `/release`, `/models`, and `/encoder`. Supply `FORECAST_SERVICE_TOKEN` from the host's secret manager. The container listens on port `8001` and `/healthz` becomes available after the models load. Use the host's HTTPS ingress and scope the Vercel secrets to the protected preview environment.
+From the full capstone checkout, run `node app/local.mjs` and open `http://127.0.0.1:8080`. The launcher starts the Python scorer on loopback and requires the private release JSON, checkpoints, encoder, and Python environment. Press Ctrl+C to stop it.
 
-For the Databricks Apps host, keep the model and data artifacts in a restricted Unity Catalog volume, grant the worker service principal read access to that volume, and configure their paths through the worker's `FORECAST_*` settings. Set `FORECAST_BIND=0.0.0.0` in the app runtime. Configure a dedicated Vercel caller identity with `CAN USE` on the app. In addition to the worker URL and token, the Vercel preview requires `DATABRICKS_HOST`, `DATABRICKS_CLIENT_ID`, and `DATABRICKS_CLIENT_SECRET`. The gateway exchanges those credentials for an OAuth token and sends the application token separately. Keep both credentials in server-side secret storage.
+- Override artifact locations with `FORECAST_RELEASE_JSON`, `FORECAST_MODEL_DIR`, and `FORECAST_ENCODER_DIR`. The model directory must contain `prelaunch_1_14` and `prelaunch_15_28`, each with the three seed directories containing `model.pt` and `preprocessing.json`.
+- Override the interpreter with `FORECAST_PYTHON` or change loopback ports with `FORECAST_UI_PORT` and `FORECAST_WORKER_PORT`.
 
 ## Dataset-end release contract
 
@@ -29,6 +28,4 @@ The style catalog uses the saved final main evaluation. Rank distinct base produ
 
 - `snapshotDate` is `2026-05-31`. `stores` has one row per eligible store, with string `id` and `name`, a metro label or null, and `features` holding the raw columns named in each checkpoint's `store_scaling.columns` plus `state` and `city_in_state`. `categoryShare` is keyed by business line and category. Missing category shares for stores with positive usable sales use the training preparation's zero-share rule.
 - `styles` contains approved base products, each with `id`, `product`, `businessLine`, `category`, `subcategory`, and `sizes` as a string array. The worker inherits the catalog values for a new colorway.
-- Store coordinates from the feature snapshot place the forecast, pilot, and allocation markers. Maps use the U.S. Census boundaries packaged by [us-atlas](https://github.com/topojson/us-atlas) and run without a third-party map service.
-
-The planner compares the highest-forecast pilot shortlist with a metro-coverage shortlist that keeps at least 90% of its expected sales. Network allocation uses forecast shares and preserves the entered whole-unit budget. Live scoring requires a verified dataset-end release and a reachable inference worker.
+- Store coordinates from the feature snapshot place the forecast, pilot, and allocation markers.

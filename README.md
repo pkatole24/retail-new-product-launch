@@ -6,9 +6,41 @@ I built the Databricks modeling tables, the Python forecasting and evaluation wo
 
 ## Retail Launch Planner
 
-Build a product brief for a new product or a new colorway of a catalog style. The planner estimates store-level unit sales for days 1–14 and 15–28, shows the forecast on a map, and compares a highest-forecast pilot with a shortlist that covers more metro areas while retaining at least 90% of the top shortlist's forecast. Enter a network inventory budget to distribute whole units by forecast share. A labeled sample illustrates the workflow.
+1. **Build the product brief.** Enter a new product or choose a catalog style for a new colorway. A catalog style supplies its product name and taxonomy and supplies sizes when available. Enter the launch month and price.
+2. **Run the prelaunch forecast.** The planner returns expected unit sales for every eligible store for days 1–14 and 15–28. It maps the store forecasts and sums the two windows for a 28-day outlook.
+3. **Plan the rollout.** Compare the highest-forecast pilot with a same-size shortlist that maximizes known metro coverage while retaining at least 90% of the top shortlist's forecast. Enter a network inventory budget to distribute whole units by forecast share.
 
-Vercel hosts the interface and routes live requests to Databricks Model Serving. The serving model uses the frozen two-part neural ensemble with structured sizes and FashionSigLIP text features. It averages seeds 13, 29, and 47 for each prelaunch window. The store features reflect a May 31, 2026 snapshot, so the forecasts describe launch scenarios under that store context. The original data and serving artifacts are private.
+A labeled sample is available from the planner for exploring the workflow.
+
+### App architecture
+
+```mermaid
+flowchart LR
+    UI["Retail Launch Planner<br/>Product brief, forecast map, pilot and allocation"] -->|"Catalog and forecast requests"| API["Vercel server-side API"]
+    API -->|"Authenticated request"| Serving["Databricks Model Serving"]
+    Assets["Private release<br/>Frozen checkpoints, encoder, style catalog and store snapshot"] --> Serving
+    Serving -->|"Catalog entries or forecasts by store and window"| API
+    API -->|"Results"| UI
+```
+
+### Forecast model architecture
+
+```mermaid
+flowchart TD
+    Text["Product name, color and taxonomy"] --> Encoder["Frozen FashionSigLIP encoder<br/>768-value text vector"]
+    Encoder --> Product["Product tower<br/>32-value product vector"]
+    Structured["Structured product inputs<br/>Sizes, price, launch month and lifecycle features"] --> Product
+    StoreInputs["Store inputs<br/>Location, sales and price history, category mix and coverage"] --> Store["Store tower<br/>32-value store vector"]
+    Product --> Head["Two-part forecast head"]
+    Store --> Head
+    Head --> Probability["Probability of positive sales"]
+    Head --> Conditional["Expected units given positive sales"]
+    Probability --> Units["Multiply to estimate units for one colorway, store and forecast window"]
+    Conditional --> Units
+    Units --> Ensemble["Average seeds 13, 29 and 47 within each prelaunch window"]
+```
+
+Databricks Model Serving scores each brief against the **May 31, 2026 store snapshot**. The browser uses the returned forecasts to build the map, pilot comparison, and allocation. The original data and serving artifacts are private. The week-one model described below is part of the offline evaluation.
 
 ## Databricks data pipeline
 

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Retail Launch Planner</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="masthead"><div class="masthead-inner"><a class="brand" href="#launch"><span aria-hidden="true">↗</span> Retail Launch Planner</a></div></header>
+  <main>
+    <div id="launch">
+      <div class="intro"><h1>Build a Launch</h1><p>Forecast a new product or colorway, compare pilot stores, and allocate your launch inventory.</p></div>
+      <nav class="workflow-nav" aria-label="Launch stages"><a href="#product">Product</a><a href="#forecast">Sales forecast</a><a href="#pilot">Pilot stores</a><a href="#network">Network launch</a></nav>
+      <section id="product" class="stage" aria-labelledby="product-title">
+        <div class="stage-heading"><div><h2 id="product-title" tabindex="-1">Product brief</h2><p>Choose the attributes the forecast model will use.</p></div></div>
+        <form id="brief" class="card">
+          <fieldset><legend>Launch type</legend><label><input type="radio" name="kind" value="product" checked> New product</label><label><input type="radio" name="kind" value="colorway"> New colorway</label></fieldset>
+          <label id="style-field" hidden>Existing style<select name="style"><option value="">Choose a style</option></select></label>
+          <div class="fields">
+            <label>Product name<input name="product" required maxlength="120"></label>
+            <label>New color<input name="color" required maxlength="64"></label>
+            <label>Business line<input name="businessLine" required maxlength="64"></label>
+            <label>Category<input name="category" required maxlength="64"></label>
+            <label>Subcategory<input name="subcategory" required maxlength="64"></label>
+            <label>Sizes<input name="sizes" placeholder="XS, S, M, L" required maxlength="160"></label>
+            <label>Price in USD<input name="price" type="number" min="0.01" step="0.01" required></label>
+            <label>Launch month<select name="month" required><option value="">Choose a month</option></select></label>
+          </div>
+          <div class="actions"><button id="run">Run sales forecast</button><button type="button" class="secondary" id="sample">View sample workflow</button></div>
+          <p class="status" id="forecast-status" role="status"></p>
+        </form>
+      </section>
+      <section id="forecast" class="stage" aria-labelledby="forecast-title">
+        <div class="stage-heading"><div><h2 id="forecast-title" tabindex="-1">Sales forecast</h2><p id="forecast-description">Run the product brief to see the 28-day outlook.</p></div><button id="continue-pilot" hidden>Compare pilot stores</button></div>
+        <div id="forecast-results" hidden></div>
+      </section>
+      <section id="pilot" class="stage" aria-labelledby="pilot-title">
+        <div class="stage-heading"><div><h2 id="pilot-title" tabindex="-1">Pilot stores</h2><p id="pilot-description">Continue from the forecast to compare two shortlists.</p></div><button id="continue-network" hidden>Plan network launch</button></div>
+        <div id="pilot-results" hidden>
+          <div class="controls"><label>Stores per shortlist <input id="pilot-count" type="number" min="1" step="1"></label></div>
+          <div id="shortlists"></div>
+        </div>
+      </section>
+      <section id="network" class="stage" aria-labelledby="network-title">
+        <div class="stage-heading"><div><h2 id="network-title" tabindex="-1">Network launch</h2><p id="budget-scale">Continue from the pilot comparison to enter a network-wide unit budget.</p></div></div>
+        <div id="network-results" hidden>
+          <form id="budget-form" class="controls"><label>Unit budget<input name="budget" inputmode="numeric" pattern="[0-9]+" required></label><button>Allocate units</button></form>
+          <p id="allocation-status" role="status"></p><div id="allocation"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script src="./vendor/d3-array.min.js" defer></script>
+  <script src="./vendor/d3-geo.min.js" defer></script>
+  <script src="./vendor/topojson-client.min.js" defer></script>
+  <script type="module" src="./main.mjs"></script>
+</body>
+</html>

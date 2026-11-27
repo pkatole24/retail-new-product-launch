@@ -1,0 +1,19 @@
+FROM python:3.14-slim
+
+WORKDIR /srv/launch-planner
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+COPY app/worker-requirements.txt /tmp/worker-requirements.txt
+RUN pip install --no-cache-dir torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu \
+    && pip install --no-cache-dir -r /tmp/worker-requirements.txt
+COPY src/ src/
+COPY app/scorer.py app/scorer.py
+
+ENV FORECAST_BIND=0.0.0.0 \
+    FORECAST_PORT=8001 \
+    FORECAST_RELEASE_JSON=/release/release.json \
+    FORECAST_MODEL_DIR=/models \
+    FORECAST_ENCODER_DIR=/encoder
+EXPOSE 8001
+USER 10001
+CMD ["python", "app/scorer.py"]

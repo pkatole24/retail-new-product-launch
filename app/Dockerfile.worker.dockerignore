@@ -1,0 +1,14 @@
+**
+!app/
+app/*
+!app/Dockerfile.worker
+!app/worker-requirements.txt
+!app/scorer.py
+!src/
+src/*
+!src/fit_two_tower_1_14.py
+!src/run_weekly_lightgbm_1_14.py
+!src/two_tower_features_1_14.py
+!src/two_tower_text_1_14.py
+!src/fetch_two_tower_1_14.py
+!src/fetch_weekly_lightgbm_sources.py

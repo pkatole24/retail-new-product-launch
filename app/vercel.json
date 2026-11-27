@@ -1,0 +1,7 @@
+{
+  "framework": null,
+  "outputDirectory": "public",
+  "functions": {
+    "api/forecast.mjs": { "maxDuration": 35 }
+  }
+}

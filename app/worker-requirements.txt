@@ -1,0 +1,10 @@
+databricks-sdk==0.169.0
+databricks-sql-connector==4.9.0
+duckdb==2.0.1
+lightgbm==4.6.0
+numpy==2.5.5
+open-clip-torch==4.2.2
+pandas==3.1.1
+pyarrow==26.0.1
+sentencepiece==0.2.3
+transformers==5.24.0

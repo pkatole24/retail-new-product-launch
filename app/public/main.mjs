@@ -63,8 +63,7 @@ function updateStyle() {
     fields[name].readOnly = colorway && (name !== 'sizes' || Boolean(style?.sizes.length));
     if (colorway) fields[name].value = name === 'sizes' ? (style?.sizes ?? []).join(', ') : style?.[name] ?? '';
   }
-  if (colorway) $('forecast-status').textContent = catalog.length ? '' : 'The existing-style catalog is unavailable. You can still view the sample workflow.';
-  else $('forecast-status').textContent = '';
+  $('forecast-status').textContent = '';
 }
 brief.querySelectorAll('[name=kind], [name=style]').forEach(input => input.addEventListener('change', updateStyle));
 
@@ -175,7 +174,10 @@ $('budget-form').addEventListener('submit', event => {
   }
 });
 
+const stylePlaceholder = fields.style.options[0];
+stylePlaceholder.textContent = 'Loading existing styles…';
 api('catalog').then(data => {
+  if (!Array.isArray(data.styles)) throw new Error('Invalid style catalog');
   catalog = data.styles;
   for (const [label, styles] of Map.groupBy(catalog, item => item.group || 'Existing styles')) {
     const group = document.createElement('optgroup');
@@ -183,5 +185,8 @@ api('catalog').then(data => {
     for (const style of styles) group.append(new Option(`${style.product} · ${style.subcategory}`, style.id));
     fields.style.append(group);
   }
-  updateStyle();
-}).catch(() => {});
+  stylePlaceholder.textContent = catalog.length ? 'Choose a style' : 'No existing styles found';
+  if (fields.kind.value === 'colorway') updateStyle();
+}).catch(() => {
+  stylePlaceholder.textContent = 'Existing styles unavailable';
+});

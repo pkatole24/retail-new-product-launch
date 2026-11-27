@@ -27,7 +27,10 @@
             <label>Business line<input name="businessLine" required maxlength="64"></label>
             <label>Category<input name="category" required maxlength="64"></label>
             <label>Subcategory<input name="subcategory" required maxlength="64"></label>
-            <label>Sizes<input name="sizes" placeholder="XS, S, M, L" required maxlength="160"></label>
+            <div class="size-field">
+              <label>Sizes<input name="sizes" placeholder="XS, S, M, L" required maxlength="160" aria-describedby="size-guidance"></label>
+              <small id="size-guidance" hidden></small>
+            </div>
             <label>Price in USD<input name="price" type="number" min="0.01" step="0.01" required></label>
             <label>Launch month<select name="month" required><option value="">Choose a month</option></select></label>
           </div>

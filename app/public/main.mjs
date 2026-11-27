@@ -48,6 +48,15 @@ for (let month = 1; month <= 12; month++) {
 function updateStyle() {
   const colorway = fields.kind.value === 'colorway';
   const style = catalog.find(item => item.id === fields.style.value);
+  const needsSizes = colorway && style && !style.sizes.length;
+  const bra = needsSizes && style.subcategory === 'Sports Bras';
+  $('size-guidance').hidden = !needsSizes;
+  $('size-guidance').textContent = needsSizes
+    ? bra
+      ? 'Enter the sizes you plan to offer. Cup ranges in the style name describe fit.'
+      : 'Enter the sizes you plan to offer. This style has no saved size list.'
+    : '';
+  fields.sizes.placeholder = bra ? '32B, 32C, 34B, 34C' : 'XS, S, M, L';
   $('style-field').hidden = !colorway;
   fields.style.required = colorway;
   for (const name of inherited) {

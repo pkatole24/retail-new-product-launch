@@ -57,6 +57,7 @@ input:not([type=radio]), select {
   color: #1c2c24; background: white; border: 1px solid #a8b6ac;
 }
 input:read-only { background: #eef1eb; }
+.size-field small { display: block; margin-top: .35rem; color: var(--muted); line-height: 1.35; }
 input[type=radio] { accent-color: var(--green); }
 fieldset { border: 0; padding: 0; margin: 0 0 .95rem; display: flex; gap: .55rem; flex-wrap: wrap; }
 fieldset label { display: inline-flex; align-items: center; gap: .4rem; padding: .38rem .65rem; border: 1px solid var(--line); border-radius: .45rem; }
